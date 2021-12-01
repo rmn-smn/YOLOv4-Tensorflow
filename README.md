@@ -9,7 +9,7 @@ Yet another implementation of YOLOv4 in Tensorflow 2.x. Implemented mainly for s
 
 ## retrain using coco data set
 
-- download [Coco](https://cocodataset.org/#home) dataset
+- download [COCO](https://cocodataset.org/#home) dataset
 - place training and test data in model_data folder
 - run run_training.py
 
