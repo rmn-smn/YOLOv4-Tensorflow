@@ -32,6 +32,8 @@ Yet another implementation of YOLOv4 in Tensorflow 2.x. Implemented mainly for s
   - load original darknet weights or a TF checkpoint
   - run detection
 
+![train](/res/train.png)
+
 ## Some references
 
 Model:
