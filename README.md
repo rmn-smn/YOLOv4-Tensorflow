@@ -2,6 +2,8 @@
 
 Yet another implementation of YOLOv4 in Tensorflow 2.x. Implemented mainly for self-educational purposes, using Keras's subclassing API.
 
+Additionally, a simple frontend using QtQuick is included. Its logic is agnostic to the tensorflow model. All back and frontend communication is realised using a bridge class.
+
 ## Run image detect using original Darknet weights
 
 - download original weights from [AlexeyAB](https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights)
@@ -32,7 +34,7 @@ Yet another implementation of YOLOv4 in Tensorflow 2.x. Implemented mainly for s
   - load original darknet weights or a TF checkpoint
   - run detection
 
-![train](/res/train.png)
+![training](/res/training.png) ![detection](/res/detection.png)
 
 ## Some references
 
