@@ -2,7 +2,7 @@
 
 Yet another implementation of YOLOv4 in Tensorflow 2.x. Implemented mainly for self-educational purposes, using Keras's subclassing API.
 
-Additionally, a simple frontend using QtQuick is included. Its logic is agnostic to the tensorflow model. All back and frontend communication is realised using a bridge class.
+Additionally, a simple frontend using QtQuick is included. Its logic is agnostic to the tensorflow model. All back- and frontend communication is realised using a bridge class.
 
 ## Run image detect using original Darknet weights
 
