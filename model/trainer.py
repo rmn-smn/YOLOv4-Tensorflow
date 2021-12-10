@@ -50,8 +50,8 @@ class Initializer():
     def load_checkpoint(self):
 
         try:
-            self.model.load_weights(f"{self.checkpointdir}/yolov4_custom")
-            print(f"Loading checkpoint: {self.checkpointdir}/yolov4_custom")
+            self.model.load_weights(f"{self.checkpointdir}/yolov4")
+            print(f"Loading checkpoint: {self.checkpointdir}/yolov4")
         except (ValueError):
             print("Shapes are incompatible, training from scratch")
 
@@ -280,17 +280,17 @@ class Trainer():
 
             if self.save_checkpoints and not self.save_best_checkpoint_only:
                 save_directory = os.path.join(
-                    self.checkpointdir, self.model.name+"_val_loss_{:7.2f}"
+                    self.checkpointdir, 'yolov4'+"_val_loss_{:7.2f}"
                     .format(total_val/count))
                 self.model.save_weights(save_directory)
             if self.save_best_checkpoint_only and best_val_loss>total_val/count:
                 save_directory = os.path.join(
-                    self.checkpointdir, self.model.name)
+                    self.checkpointdir, 'yolov4')
                 self.model.save_weights(save_directory)
                 best_val_loss = total_val/count
             if not self.save_best_checkpoint_only and not self.save_checkpoints:
                 save_directory = os.path.join(
-                    self.checkpointdir, self.model.name)
+                    self.checkpointdir, 'yolov4')
                 self.model.save_weights(save_directory)
             
 
