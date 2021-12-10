@@ -26,7 +26,7 @@ class Dataset():
     def __init__(self, dataset_type, annotations, 
                  classes, batch_size = 4,
                  input_size=416, data_augmentation = True, 
-                 load_images_to_ram = True,
+                 load_images_to_ram = False,
                  strides = [8, 16, 32], 
                  anchors = [[[12,  16], [19,   36], [40,   28]],
                            [[36,  75], [76,   55], [72,  146]],

@@ -4,12 +4,12 @@ from model.dataset import Dataset
 
 def main():
     ## download coco data from https://cocodataset.org/#home
-    ## place training data in "model_data/coco/train2017"
-    ## place training data in "model_data/coco/test2017"
+    ## place training data in "model_data/coco/train2017.txt"
+    ## place training data in "model_data/coco/val2017.txt"
 
     classes = "model_data/coco/coco.names"
-    train_anntoations = "model_data/coco/train.txt"
-    test_annotations = "model_data/coco/test.txt"
+    train_annotations = "model_data/coco/train2017.txt"
+    test_annotations = "model_data/coco/val2017.txt"
 
     yolo = YOLOv4(classes=classes)
     #initializer = Initializer(yolo)
@@ -17,9 +17,11 @@ def main():
     #initializer.load_checkpoint()
     
     trainset = Dataset(
-        'train', annotations = train_anntoations, classes = classes)
+        'train', annotations = train_annotations, 
+        classes = classes,load_images_to_ram = False)
     testset = Dataset(
-        'test', annotations = test_annotations, classes = classes)
+        'test', annotations = test_annotations, 
+        classes = classes, load_images_to_ram = False)
     trainer = Trainer(yolo, trainset = trainset, testset  = testset)
     trainer.train()
 
