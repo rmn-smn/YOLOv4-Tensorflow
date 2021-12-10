@@ -21,20 +21,22 @@ class Initializer():
           darknetweights (str):      path to yolo4.weights
     '''
     def __init__(self,model,input_tensor = tf.zeros((1,416,416,3)), 
-                 checkpointdir = 'checkpoints'):
+                 checkpointdir = 'checkpoints',
+                 darknetweights = "model_data/yolov4.weights"):
 
         self.checkpointdir = checkpointdir
+        self.darknetweights = darknetweights
         self.model = model
         self.input_tensor = input_tensor
         _ = self.model(self.input_tensor,training=True)
 
-    def load_darknet_weights(self,darknetweights = "model_data/yolov4.weights"):
+    def load_darknet_weights(self):
 
         yolo_coco_classes = 'model_data/coco/coco.names'
         Darknet = YOLOv4(classes=yolo_coco_classes)
         _=Darknet(self.input_tensor,training=True)
-        print('loading Darknet weights: ' + darknetweights)
-        load_yolo_weights(Darknet, darknetweights) 
+        print('loading Darknet weights: ' + self.darknetweights)
+        load_yolo_weights(Darknet, self.darknetweights) 
 
         for i, l in enumerate(Darknet.layers):
             layer_weights = l.get_weights()
@@ -43,6 +45,7 @@ class Initializer():
                     self.model.layers[i].set_weights(layer_weights)
                 except:
                     print("skipping", self.model.layers[i].name)
+                    
 
     def load_checkpoint(self):
 
@@ -53,7 +56,6 @@ class Initializer():
             print("Shapes are incompatible, training from scratch")
 
 
-
 class Trainer():
     '''
     Trainer for yolo model.
@@ -61,6 +63,8 @@ class Trainer():
 
     Args: 
           model (Model):             Yolo model instance
+          trainset
+          testset
           epochs (int):              number of training epochs
           warmup_epochs (int):       number of warmup epochs
           learning_rate (float):     final learning rate
@@ -81,7 +85,7 @@ class Trainer():
                  learning_rate = 1e-6, initial_lr = 1e-4,
                  logdir = 'log', checkpointdir = 'checkpoints', 
                  save_checkpoints = True,
-                 save_best_checkpoint_only = True):
+                 save_best_checkpoint_only = True, interrupt = False):
 
         gpus = tf.config.experimental.list_physical_devices('GPU')
         print(f'GPUs {gpus}')
@@ -98,7 +102,19 @@ class Trainer():
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.initial_lr = initial_lr
-        
+
+        self.current_iter = 0
+        self.current_epoch = 0
+        self.current_learning_rate = 0.0
+        self.current_train_giou_loss = 0.0
+        self.current_train_conf_loss = 0.0
+        self.current_train_prob_loss = 0.0
+        self.current_train_total_loss = 0.0
+        self.current_test_giou_loss = 0.0
+        self.current_test_conf_loss = 0.0
+        self.current_test_prob_loss = 0.0
+        self.current_test_total_loss = 0.0
+
         if os.path.exists(logdir): shutil.rmtree(logdir)
         self.writer = tf.summary.create_file_writer(logdir)
         self.validate_writer = tf.summary.create_file_writer(logdir)
@@ -112,6 +128,7 @@ class Trainer():
         self.total_steps = self.train_epochs * self.steps_per_epoch
 
         self.model = model
+        self.interrupt = interrupt
 
         # build model
         self.model.build(
@@ -120,6 +137,9 @@ class Trainer():
 
         self.optimizer = tf.keras.optimizers.Adam()
 
+    # @property
+    # def current_iter(self):
+    #     return self.iter
 
     def train_step(self,image_data, target, loss_fn):
         with tf.GradientTape() as tape:
@@ -206,6 +226,19 @@ class Trainer():
                       "prob_loss:{:7.2f}, total_loss:{:7.2f}"
                     .format(epoch, cur_step, self.steps_per_epoch, results[1], 
                             results[2], results[3], results[4], results[5]))
+                # self.current_train_stats = [epoch, *results]
+                # self.current_iter = results[0]
+                self.current_iter = results[0]
+                self.current_epoch = epoch
+                self.current_learning_rate = results[1]
+                self.current_train_giou_loss = results[2]
+                self.current_train_conf_loss = results[3]
+                self.current_train_prob_loss = results[4]
+                self.current_train_total_loss = results[5]
+
+                if self.interrupt:
+                    return
+
 
             if len(self.testset) == 0:
                 print("configure TEST options to validate model")
@@ -221,6 +254,11 @@ class Trainer():
                 conf_val += results[1]
                 prob_val += results[2]
                 total_val += results[3]
+
+                self.current_test_giou_loss = results[0]
+                self.current_test_conf_loss = results[1]
+                self.current_test_prob_loss = results[2]
+                self.current_test_total_loss = results[3]
             # writing validate summary data
             with self.validate_writer.as_default():
                 tf.summary.scalar(
@@ -232,6 +270,8 @@ class Trainer():
                 tf.summary.scalar(
                     "validate_loss/prob_val", prob_val/count, step=epoch)
             self.validate_writer.flush()
+            temp_stats = [*results]
+            self.current_test_stats = [i/count for i in temp_stats]
                 
             print("\n\ngiou_val_loss:{:7.2f}, conf_val_loss:{:7.2f}," \
                 "prob_val_loss:{:7.2f}, total_val_loss:{:7.2f}\n\n".
@@ -252,3 +292,5 @@ class Trainer():
                 save_directory = os.path.join(
                     self.checkpointdir, self.model.name)
                 self.model.save_weights(save_directory)
+            
+
