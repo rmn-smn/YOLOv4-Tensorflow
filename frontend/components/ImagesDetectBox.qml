@@ -15,7 +15,7 @@ GroupBox {
         columns: 3
         FileDialog {
             id: imageFileDialog
-            nameFilters: [ "Image files (*.jpg *.png, *.tiff, *.tif)" ]
+            //nameFilters: [ "Image files (*.jpg *.png, *.tiff, *.tif)" ]
             title: "Please choose a file"
             folder: shortcuts.home
             selectMultiple: true
